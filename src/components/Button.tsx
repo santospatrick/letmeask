@@ -1,5 +1,5 @@
-import React, { ButtonHTMLAttributes } from 'react'
-import '../styles/button.scss'
+import { ButtonHTMLAttributes } from 'react'
+import 'styles/button.scss'
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement>
 
