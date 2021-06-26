@@ -2,65 +2,24 @@ import logoImg from 'assets/images/logo.svg';
 import Button from 'components/Button'
 import 'styles/room.scss'
 import RoomCode from 'components/RoomCode'
+import Question from 'components/Question'
 import { useParams } from 'react-router-dom';
 import { FormEvent, useEffect, useState } from 'react';
 import { useAuth } from 'hooks/useAuth';
 import { database } from 'services/firebase';
+import { useRoom } from 'hooks/useRoom';
 
 type RoomParmas = {
     id: string
-}
-
-type FirebaseQuestions = Record<string, {
-    author: {
-        name: string,
-        avatar: string
-    },
-    content: string,
-    isHighlighted: boolean,
-    isAnswered: boolean
-}>
-
-type Question = {
-    id: string
-    author: {
-        name: string,
-        avatar: string
-    },
-    content: string,
-    isHighlighted: boolean,
-    isAnswered: boolean
 }
 
 function Room() {
     const { user } = useAuth();
     const params = useParams<RoomParmas>();
     const [newQuestion, setNewQuestion] = useState('')
-    const [questions, setQuestions] = useState<Question[]>([])
-    const [title, setTitle] = useState('');
-
-    useEffect(() => {
-        const roomRef = database.ref(`rooms/${params.id}`)
-
-        roomRef.on('value', room => {
-            const databaseRoom = room.val()
-            const firebaseQuestions = databaseRoom.questions as FirebaseQuestions ?? {};
-
-            const parsedQuestions = Object
-                .entries(firebaseQuestions)
-                .map(([key,value]) => ({
-                    id: key, 
-                    content: value.content, 
-                    author: value.author, 
-                    isHighlighted: value.isHighlighted, 
-                    isAnswered: value.isAnswered
-                }))
-
-            setTitle(databaseRoom.title)
-            setQuestions(parsedQuestions)
-        })
-    }, [params.id])
-
+    const roomId = params.id;
+    const { questions, title } = useRoom(roomId);
+    
     async function handleSendQuestion(event: FormEvent) {
         event.preventDefault();
 
@@ -82,7 +41,7 @@ function Room() {
             isAnswered: false
         }
 
-        await database.ref(`rooms/${params.id}/questions`).push(question)
+        await database.ref(`rooms/${roomId}/questions`).push(question)
 
         setNewQuestion('')
     }
@@ -92,7 +51,7 @@ function Room() {
             <header>
                 <div className="content">
                     <img src={logoImg} alt="letmeask" />
-                    <RoomCode code={params.id} />
+                    <RoomCode code={roomId} />
                 </div>
             </header>
 
@@ -122,7 +81,11 @@ function Room() {
                     </div>
                 </form>
 
-                <pre>{JSON.stringify(questions, null, 2)}</pre>
+                <div className="question-list">
+                    {questions.map(question => (
+                        <Question key={question.id} content={question.content} author={question.author} />
+                    ))}
+                </div>
             </main>
         </div>
     )
