@@ -4,7 +4,7 @@ import 'styles/room.scss'
 import RoomCode from 'components/RoomCode'
 import Question from 'components/Question'
 import { useParams } from 'react-router-dom';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useAuth } from 'hooks/useAuth';
 import { database } from 'services/firebase';
 import { useRoom } from 'hooks/useRoom';
